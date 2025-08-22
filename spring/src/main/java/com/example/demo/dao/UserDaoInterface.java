@@ -11,6 +11,8 @@ public interface UserDaoInterface {
 
     int insertUser(UUID id, User user);
 
+    // allow for the creation of users without the need of an UUID explicitly from
+    // the user
     default int insertUser(User user) {
         UUID id = UUID.randomUUID();
         return this.insertUser(id, user);
