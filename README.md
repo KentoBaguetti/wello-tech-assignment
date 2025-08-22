@@ -32,4 +32,4 @@ Fetch emails and filter by email:
 `GET/api/user/email/:keyword`
 <br>
 Fetch the entire DB:
-`GET/api/users`
+`GET/api/user`
