@@ -10,8 +10,10 @@ func NewServer() *gin.Engine {
 
 	router := gin.Default()
 
+	// int database
 	userDatabase := db.CreateDB()
 
+	// init the db handlers
 	userHandler := handlers.NewUserHandler(&userDatabase)
 
 	api := router.Group("/api") 

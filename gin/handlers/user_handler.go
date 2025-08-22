@@ -14,10 +14,12 @@ type UserHandler struct {
 	db *db.UserDB
 }
 
+//email struct for when teh POSt response is parsed
 type Email struct {
 	Email string `json:"email" binding:"required"`
 }
 
+// 'constructor'
 func NewUserHandler(database *db.UserDB)  *UserHandler {
 	temp := UserHandler{db: database}
 	return &temp
@@ -26,21 +28,25 @@ func NewUserHandler(database *db.UserDB)  *UserHandler {
 func (uh *UserHandler) CreateUser(c *gin.Context) {
 	var emailData Email
 
+	// check if the email value is null
 	if err := c.ShouldBindJSON(&emailData); err != nil {
 		 c.JSON(400, gin.H{"msg": "Error creating user"})
         return
 	}
 
+	// check if the email value exists
 	if emailData.Email == "" {
 		c.JSON(400, gin.H{"msg": "Please enter an email"})
         return
 	}
 
+	// check if the email is valid
 	if !strings.Contains(emailData.Email, "@") {
 		c.JSON(400, gin.H{"msg": "Please enter a valid email address"})
         return
 	}
 
+	// search db and check if the email alr exists
 	if uh.db.CheckIfEmailExists(emailData.Email) {
 		c.JSON(400, gin.H{"msg": "Email already exists"})
         return
@@ -66,6 +72,7 @@ func (uh *UserHandler) GetUserByPageNumber(c *gin.Context) {
         return
 	}
 
+	// convert string param into an int
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
@@ -73,6 +80,7 @@ func (uh *UserHandler) GetUserByPageNumber(c *gin.Context) {
 		return
 	}
 
+	// check if the search index exists
 	if id < 1 || id > uh.db.GetPageCount() {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error message" : "Please enter an integer page number",

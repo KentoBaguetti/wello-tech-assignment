@@ -12,6 +12,8 @@ type UserDB struct {
 	maxUsersPerPage int
 }
 
+// build an in-memory db with a map. Each key is an integer representing a page number, with the values representing vectors
+// with a max size limit of 10 per page
 func CreateDB() UserDB {
 	firstPage := make([]*models.User, 0)
 	tmpDb := UserDB{users: make(map[int][]*models.User), pageCount: 1, maxUsersPerPage: 10}
@@ -21,6 +23,7 @@ func CreateDB() UserDB {
 
 func (db *UserDB) AddUser(user *models.User) {
 
+	// if the page has 10 users, create a new page and start adding to thats
 	if len(db.users[db.pageCount]) >= db.maxUsersPerPage {
 		db.pageCount++
 		newPage := make([]*models.User, 0)
@@ -35,6 +38,7 @@ func (db *UserDB) AddUser(user *models.User) {
 
 }
 
+// iterate over all users and add users that match the email filter
 func (db *UserDB) FilterByEmail(keyword string) []string {
 
 	res := make([]string, 0)
@@ -54,6 +58,7 @@ func (db *UserDB) FilterByEmail(keyword string) []string {
 
 }
 
+// return a page of users from the db
 func (db *UserDB) GetPage(index int) []string {
 	res := make([]string, 0)
 
