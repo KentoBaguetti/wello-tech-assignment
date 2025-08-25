@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @GetMapping(path = "users")
-    public ResponseEntity<Map<String, Object>> paginate(@RequestParam(defaultValue = "") int offset, @RequestParam(defaultValue = "") int limit) {
+    public ResponseEntity<Map<String, Object>> paginate(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
 
         List<User> users = this.userService.paginate(offset, limit);
         int totalNumberOfUsers = this.userService.getTotalNumberOfUsers();
@@ -71,6 +71,8 @@ public class UserController {
                 "message", "Success",
                 "status", 200,
                 "users", users,
+                "offset", offset,
+                "limit", limit,
                 "totalNumberOfUsers", totalNumberOfUsers
         ));
     }
