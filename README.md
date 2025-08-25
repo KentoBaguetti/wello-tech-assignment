@@ -5,13 +5,13 @@
 create user
 `POST/api/user`
 POST BODY:
-`{ "email" : "kentaro.barne5@gmail.com" }`
+`{ "username" : "Kentaro", "email" : "kentaro.barnes5@gmail.com" }`
 <br>
-Fetch a page from the DB:
-`GET/api/users/page/:id`
+Fetch a page from the DB (offset pagination):
+`GET/api/users?offset=0&limit=10`
 <br>
 Fetch emails and filter by email:
-`GET/api/users/filter/:keyword`
+`GET/api/users/filter?email=gmail`
 <br>
 Fetch the entire DB:
 `GET/api/users`
@@ -23,13 +23,13 @@ Fetch the entire DB:
 create user
 `POST/api/user`
 POST BODY:
-`{ "email" : "kentaro.barne5@gmail.com" }`
+`{ "username" : "Kentaro", "email" : "kentaro.barnes5@gmail.com" }`
 <br>
-Fetch a page from the DB:
-`GET/api/user/page/:id`
+Fetch a page from the DB (offset pagination):
+`GET/api/users?offset=0&limit=10`
 <br>
 Fetch emails and filter by email:
-`GET/api/user/email/:keyword`
+`GET/api/users/filter?email=gmail`
 <br>
 Fetch the entire DB:
-`GET/api/user`
+`GET/api/users`
