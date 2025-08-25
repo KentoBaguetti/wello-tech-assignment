@@ -23,20 +23,20 @@ public class UserService {
         return this.userDao.insertUser(user);
     }
 
-    public List<String> filterByEmail(String keyword) {
+    public List<User> filterByEmail(String keyword) {
         return userDao.filterByEmail(keyword);
     }
 
-    public List<String> filterByPage(Integer pageNumber) {
-        return userDao.getPage(pageNumber);
+    public List<User> paginate(Integer offset, Integer limit) {
+        return userDao.paginate(offset, limit);
     }
 
-    public Map<Integer, List<User>> allUsers() {
+    public List<User> allUsers() {
         return userDao.getAllUsers();
     }
 
-    public boolean checkInRange(Integer index) {
-        return userDao.inRange(index);
+    public int getTotalNumberOfUsers() {
+        return userDao.getTotalNumberOfUsers();
     }
 
 }

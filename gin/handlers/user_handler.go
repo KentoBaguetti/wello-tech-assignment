@@ -14,8 +14,9 @@ type UserHandler struct {
 	db *db.UserDB
 }
 
-//email struct for when teh POSt response is parsed
-type Email struct {
+// json param struct for when teh POSt response is parsed
+type UserData struct {
+	Username string `json:"username"`
 	Email string `json:"email" binding:"required"`
 }
 
@@ -26,92 +27,74 @@ func NewUserHandler(database *db.UserDB)  *UserHandler {
 }
 
 func (uh *UserHandler) CreateUser(c *gin.Context) {
-	var emailData Email
+	var userData UserData
 
 	// check if the email value is null
-	if err := c.ShouldBindJSON(&emailData); err != nil {
+	if err := c.ShouldBindJSON(&userData); err != nil {
 		 c.JSON(400, gin.H{"msg": "Error creating user"})
         return
 	}
 
 	// check if the email value exists
-	if emailData.Email == "" {
+	if userData.Email == "" {
 		c.JSON(400, gin.H{"msg": "Please enter an email"})
         return
 	}
 
 	// check if the email is valid
-	if !strings.Contains(emailData.Email, "@") {
+	if !strings.Contains(userData.Email, "@") {
 		c.JSON(400, gin.H{"msg": "Please enter a valid email address"})
         return
 	}
 
-	// search db and check if the email alr exists
-	if uh.db.CheckIfEmailExists(emailData.Email) {
-		c.JSON(400, gin.H{"msg": "Email already exists"})
-        return
-	}
+	newUser := models.User{Username: userData.Username, Email: userData.Email}
 
-	pNewUser := models.User{Email: emailData.Email}
-
-	uh.db.AddUser(&pNewUser)
+	uh.db.AddUser(newUser)
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg" : "Successfully added user",
-		"PageNumberAddedTo" : uh.db.GetPageCount(),
-		"email" : emailData.Email,
+		"TotalNumberOfUsers" : uh.db.GetNumberOfUsers(),
+		"username": userData.Username,
+		"email" : userData.Email,
 	})
 
 }
 
-func (uh *UserHandler) GetUserByPageNumber(c *gin.Context) {
-	idStr := c.Param("id")
+func (uh *UserHandler) Paginate(c *gin.Context) {
+	
+	offset := c.DefaultQuery("offset", "0")
+	limit := c.DefaultQuery("limit", "10")
 
-	if idStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Please enter a page number"})
-        return
-	}
+	offsetInt, _ := strconv.Atoi(offset)
+	limitInt, _ := strconv.Atoi(limit)
 
-	// convert string param into an int
-	id, err := strconv.Atoi(idStr)
+	users, totalNumberOfUsers := uh.db.Paginate(offsetInt, limitInt)
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error message" : "Please enter an integer page number"})
-		return
-	}
-
-	// check if the search index exists
-	if id < 1 || id > uh.db.GetPageCount() {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error message" : "Please enter an integer page number",
-			"maxPages" : uh.db.GetPageCount(),
-		})
-		return
-	}
-
-	res := uh.db.GetPage(int(id))
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg" : "Success",
-		"pageNo" : id,
-		"totalNumberOfPages": uh.db.GetPageCount(),
-		"emails" : res,
+		"status" : "200",
+		"totalNumberOfUsers": totalNumberOfUsers,
+		"offset" : offsetInt,
+		"limit" : limitInt,
+		"data" : users,
 	})
 }
 
 func (uh *UserHandler) GetUsersByEmailFilter (c *gin.Context) {
-	keyword := c.Param("keyword")
+	keyword := c.DefaultQuery("email", "")
 
 	if keyword == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Please enter a keyword to filter for"})
         return
 	}
 
-	res := uh.db.FilterByEmail(keyword)
+	res, count := uh.db.FilterByEmail(keyword)
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg": "Success",
 		"emails": res,
+		"numberOfEmails": count,
 	})
 
 }

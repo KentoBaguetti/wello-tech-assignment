@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("api/user")
+@RequestMapping("api")
 @RestController
 public class UserController {
 
@@ -23,65 +23,59 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<String> insertUser(@Valid @NonNull @RequestBody User user) {
+    @PostMapping(path = "user")
+    public ResponseEntity<Map<String, Object>> insertUser(@Valid @NonNull @RequestBody User user) {
 
         int res = this.userService.addUser(user);
 
         if (res == 0) {
-            return ResponseEntity.status(400).body("Please enter an email");
-        }
-
-        if (res == 2) {
-            return ResponseEntity.status(400).body("Email already exists");
-        }
-
-        if (res == 3) {
-            return ResponseEntity.status(400).body("Please enter a valid email address");
-        }
-
-        return ResponseEntity.status(200).body("Successfully added user to the DB");
-    }
-
-    @GetMapping(path = "email/{keyword}")
-    public ResponseEntity<Map<String, Object>> getUsersByEmail(@PathVariable("keyword") String keyword) {
-        List<String> emails = this.userService.filterByEmail(keyword);
-        return ResponseEntity.status(200).body(Map.of(
-                "message", "Success",
-                "status", 200,
-                "emails", emails
-        ));
-    }
-
-    @GetMapping(path = "page/{index}")
-    public ResponseEntity<Map<String, Object>> getUsersByPage(@PathVariable("index") Integer index) {
-
-        if (index == null) {
-            return ResponseEntity.status(400).body(Map.of(
-                    "message", "Please give an index",
+            return ResponseEntity.status(200).body(Map.of(
+                    "message", "Please enter an email",
                     "status", 400
             ));
         }
 
-        boolean inRangeFlag = userService.checkInRange(index);
-
-        if (!inRangeFlag) {
+        if (res == 3) {
             return ResponseEntity.status(200).body(Map.of(
-                    "message", "Page does not exist",
-                    "status", 200
+                    "message", "Please enter a valid email",
+                    "status", 400
             ));
         }
 
-        List<String> emails = this.userService.filterByPage(index);
+        int totalUsers = this.userService.getTotalNumberOfUsers();
+
         return ResponseEntity.status(200).body(Map.of(
-                "message", "Success",
+                "message", "Successfully added user",
                 "status", 200,
-                "currentPage", index,
-                "emails", emails
+                "totalNumberOfUsers", totalUsers
         ));
     }
 
-    @GetMapping
+    @GetMapping(path = "users/filter")
+    public ResponseEntity<Map<String, Object>> getUsersByEmail(@RequestParam(defaultValue = "") String email) {
+        List<User> users = this.userService.filterByEmail(email);
+        return ResponseEntity.status(200).body(Map.of(
+                "message", "Success",
+                "status", 200,
+                "numberOfEmails", users.size(),
+                "emails", users
+        ));
+    }
+
+    @GetMapping(path = "users")
+    public ResponseEntity<Map<String, Object>> paginate(@RequestParam(defaultValue = "") int offset, @RequestParam(defaultValue = "") int limit) {
+
+        List<User> users = this.userService.paginate(offset, limit);
+        int totalNumberOfUsers = this.userService.getTotalNumberOfUsers();
+        return ResponseEntity.status(200).body(Map.of(
+                "message", "Success",
+                "status", 200,
+                "users", users,
+                "totalNumberOfUsers", totalNumberOfUsers
+        ));
+    }
+
+    @GetMapping("users/allUsers")
     public ResponseEntity<Map<String, Object>> allUsers() {
         return ResponseEntity.status(200).body(Map.of(
                 "message", "Success",

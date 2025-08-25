@@ -9,25 +9,20 @@ import java.util.UUID;
 
 public interface UserDaoInterface {
 
-    int insertUser(UUID id, User user);
+    int insertUser(String username, User user);
 
     // allow for the creation of users without the need of an UUID explicitly from
     // the user
     default int insertUser(User user) {
-        UUID id = UUID.randomUUID();
-        return this.insertUser(id, user);
+        return this.insertUser("Guest", user);
     }
 
-    List<String> filterByEmail(String keyword);
+    List<User> filterByEmail(String keyword);
 
-    List<String> getPage(Integer index);
+    List<User> paginate(Integer offset, Integer limit);
 
-    Map<Integer, List<User>> getAllUsers();
+    List<User> getAllUsers();
 
-    boolean inRange(Integer index);
-
-    private boolean containsEmail(String email) {
-        return false;
-    };
+    int getTotalNumberOfUsers();
 
 }

@@ -9,24 +9,17 @@ import java.util.*;
 public class UserDao implements UserDaoInterface {
 
     // class vars
-    private final int maxUsersPerPage = 10;
-    private Integer numberOfPages = 1;
+    private int numberOfUsers = 0;
 
     // init the in-memory db
-    private static Map<Integer, List<User>> DB = new HashMap<Integer, List<User>>(Map.of(
-            1, new ArrayList<User>()));
+    private static List<User> DB = new ArrayList<User>();
 
     @Override
-    public int insertUser(UUID id, User user) {
+    public int insertUser(String username, User user) {
 
         // check if an email was given
         if (user.getEmail() == null) {
             return 0;
-        }
-
-        // check if the email alr exists
-        if (this.containsEmail(user.getEmail())) {
-            return 2;
         }
 
         // check if the email is a valid address - simple check
@@ -35,13 +28,8 @@ public class UserDao implements UserDaoInterface {
         }
 
         // if the user count on a page is > maxUsersPerPage, create a new page
-        if (DB.get(numberOfPages).size() >= maxUsersPerPage) {
-            numberOfPages++;
-            DB.put(numberOfPages, new ArrayList<User>());
-        }
 
-        List<User> page = DB.get(numberOfPages);
-        page.add(new User(id, user.getEmail()));
+        this.DB.add(user);
 
         return 1;
 
@@ -49,63 +37,57 @@ public class UserDao implements UserDaoInterface {
 
     // add emails to a list and return it based on matching email keywords
     @Override
-    public List<String> filterByEmail(String keyword) {
+    public List<User> filterByEmail(String keyword) {
 
-        List<String> res = new ArrayList<String>();
+        List<User> res = new ArrayList<User>();
 
-        for (int i = 1; i <= numberOfPages; i++) {
+       for (int i = 0; i < this.DB.size(); i++) {
+           User currUser = this.DB.get(i);
+           if (currUser.getEmail().contains(keyword)) {
+               res.add(currUser);
+           }
+       }
 
-            for (User user : DB.get(i)) {
-                if (user.getEmail().contains(keyword)) {
-                    res.add(user.getEmail());
-                }
-            }
-
-        }
-
-        return res;
+       return res;
 
     }
 
     // return a page from a map
     @Override
-    public List<String> getPage(Integer index) {
+    public List<User> paginate(Integer offset, Integer limit) {
 
-        List<String> res = new ArrayList<String>();
+        int dbSize = this.DB.size();
 
-        for (User user : DB.get(index)) {
-            res.add(user.getEmail());
+        if (offset <= 0) {
+            offset = 0;
         }
 
-        return res;
+        if (offset >= dbSize) {
+            return new ArrayList<User>();
+        }
+
+        if (limit <= 0) {
+            return new ArrayList<User>();
+        }
+
+        int endIndex = offset + limit;
+
+        if (endIndex > dbSize) {
+            endIndex = dbSize;
+        }
+
+        return this.DB.subList(offset, endIndex);
 
     }
 
     @Override
-    public Map<Integer, List<User>> getAllUsers() {
+    public List<User> getAllUsers() {
         return this.DB;
     }
 
-    // helper method
-    private boolean containsEmail(String email) {
-
-        for (int i = 1; i <= numberOfPages; i++) {
-
-            for (User user : DB.get(i)) {
-                if (user.getEmail().equals(email)) {
-                    return true;
-                }
-            }
-
-        }
-
-        return false;
-
-    }
-
-    // helper method
-    public boolean inRange(Integer index) {
-        return index > 0 && index <= numberOfPages;
+    @Override
+    public int getTotalNumberOfUsers() {
+        return this.DB.size();
     }
 
 }

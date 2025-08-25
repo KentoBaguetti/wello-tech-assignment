@@ -7,86 +7,76 @@ import (
 )
 
 type UserDB struct {
-	users           map[int][]*models.User
-	pageCount       int
-	maxUsersPerPage int
+	users         []models.User
+	numberOfUsers int
+	knownEmails map[string]bool
 }
 
 // build an in-memory db with a map. Each key is an integer representing a page number, with the values representing vectors
 // with a max size limit of 10 per page
 func CreateDB() UserDB {
-	firstPage := make([]*models.User, 0)
-	tmpDb := UserDB{users: make(map[int][]*models.User), pageCount: 1, maxUsersPerPage: 10}
-	tmpDb.users[1] = firstPage
+	tmpDb := UserDB{users: make([]models.User, 0), numberOfUsers: 0, knownEmails: make(map[string]bool)}
 	return tmpDb
 }
 
-func (db *UserDB) AddUser(user *models.User) {
+func (db *UserDB) AddUser(user models.User) {
 
 	// if the page has 10 users, create a new page and start adding to thats
-	if len(db.users[db.pageCount]) >= db.maxUsersPerPage {
-		db.pageCount++
-		newPage := make([]*models.User, 0)
-		db.users[db.pageCount] = newPage
-	}
-
-	currPage := db.users[db.pageCount]
-
-	updatedPage := append(currPage, user)
-
-	db.users[db.pageCount] = updatedPage
+	db.users = append(db.users, user)
+	db.knownEmails[user.Email] = true
+	db.numberOfUsers++
 
 }
 
 // iterate over all users and add users that match the email filter
-func (db *UserDB) FilterByEmail(keyword string) []string {
+func (db *UserDB) FilterByEmail(email string) ([]models.User, int) {
 
-	res := make([]string, 0)
+	count := 0
+	res := make([]models.User, 0)
 
-	for i := 1; i <= db.pageCount; i++ {
-		currPageIndex := i
-
-		for _, user := range db.users[currPageIndex] {
-			if strings.Contains(user.Email, keyword) {
-				res = append(res, user.Email)
-			}
+	for _, user := range db.users {
+		if strings.Contains(user.Email, email) {
+			res = append(res, user)
+			count ++
 		}
-
 	}
 
-	return res
+	return res, count
 
 }
 
-// return a page of users from the db
-func (db *UserDB) GetPage(index int) []string {
-	res := make([]string, 0)
-
-	for _, user := range db.users[index] {
-		res = append(res, user.Email)
+// return a page of users from the db using the offset pagiantion design
+func (db *UserDB) Paginate(offset, limit int) ([]models.User, int) {
+	
+	if offset <= 0 {
+		offset = 0
 	}
 
-	return res
+	totalNumberOfUsers := db.GetNumberOfUsers()
+
+	if limit <= 0 {
+		return make([]models.User, 0), totalNumberOfUsers
+	}
+
+	if offset > totalNumberOfUsers {
+		return make([]models.User, 0), totalNumberOfUsers
+	}
+
+	endIndex := offset + limit
+
+	if endIndex > totalNumberOfUsers {
+		endIndex = totalNumberOfUsers
+	}
+
+	return db.users[offset:endIndex], totalNumberOfUsers
 
 }
 
-func (db *UserDB) GetAllUsers() map[int][]*models.User {
+func (db *UserDB) GetAllUsers() []models.User {
 	return db.users
 }
 
-func (db *UserDB) GetPageCount() int {
-	return db.pageCount
+func (db *UserDB) GetNumberOfUsers() int {
+	return db.numberOfUsers
 }
 
-func (db *UserDB) CheckIfEmailExists(email string) bool {
-
-	for i := 1; i <= db.pageCount; i++ {
-		for _, user := range db.users[i] {
-			if user.Email == email {
-				return true
-			}
-		}
-	}
-
-	return false
-}
