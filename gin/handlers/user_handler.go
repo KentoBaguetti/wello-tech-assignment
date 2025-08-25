@@ -101,7 +101,7 @@ func (uh *UserHandler) GetUsersByEmailFilter (c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg": "Success",
-		"emails": res,
+		"users": res,
 		"numberOfEmails": count,
 	})
 

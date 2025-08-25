@@ -60,8 +60,8 @@ public class UserController {
         return ResponseEntity.status(200).body(Map.of(
                 "message", "Success",
                 "status", 200,
-                "numberOfEmails", users.size(),
-                "emails", users
+                "numberOfUsers", users.size(),
+                "users", users
         ));
     }
 
