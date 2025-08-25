@@ -73,6 +73,7 @@ func (uh *UserHandler) Paginate(c *gin.Context) {
 		"msg" : "Invalid query parameters. Please enter an integer query parameters",
 		"status" : "400",
 	})
+	return
 	}
 
 	users, totalNumberOfUsers := uh.db.Paginate(offsetInt, limitInt)
