@@ -75,7 +75,7 @@ public class UserController {
         ));
     }
 
-    @GetMapping("users/allUsers")
+    @GetMapping("users/all")
     public ResponseEntity<Map<String, Object>> allUsers() {
         return ResponseEntity.status(200).body(Map.of(
                 "message", "Success",

@@ -21,7 +21,7 @@ func NewServer() *gin.Engine {
 		api.POST("/user", userHandler.CreateUser) // creste one user
 		api.GET("/users", userHandler.Paginate) // return a page of users from the db
 		api.GET("/users/filter", userHandler.GetUsersByEmailFilter) // filter db based on email
-		api.GET("/allusers", userHandler.GetAllUsers) // return all users
+		api.GET("/users/all", userHandler.GetAllUsers) // return all users
 	}
 
 	return router

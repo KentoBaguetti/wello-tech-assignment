@@ -14,7 +14,7 @@ Fetch emails and filter by email:
 `GET/api/users/filter?email=gmail`
 <br>
 Fetch the entire DB:
-`GET/api/users`
+`GET/api/users/all`
 
 <br><br>
 
@@ -32,4 +32,4 @@ Fetch emails and filter by email:
 `GET/api/users/filter?email=gmail`
 <br>
 Fetch the entire DB:
-`GET/api/users`
+`GET/api/users/all`
