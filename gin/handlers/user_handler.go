@@ -65,8 +65,15 @@ func (uh *UserHandler) Paginate(c *gin.Context) {
 	offset := c.DefaultQuery("offset", "0")
 	limit := c.DefaultQuery("limit", "10")
 
-	offsetInt, _ := strconv.Atoi(offset)
-	limitInt, _ := strconv.Atoi(limit)
+	offsetInt, err1 := strconv.Atoi(offset)
+	limitInt, err2 := strconv.Atoi(limit)
+
+	if err1 != nil || err2 != nil {
+		c.JSON(http.StatusOK, gin.H{
+		"msg" : "Invalid query parameters. Please enter an integer query parameters",
+		"status" : "400",
+	})
+	}
 
 	users, totalNumberOfUsers := uh.db.Paginate(offsetInt, limitInt)
 

@@ -5,10 +5,13 @@ import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +87,15 @@ public class UserController {
                 "status", 200,
                 "emails", userService.allUsers()
         ));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        Map<String, Object> response = new HashMap<>();
+        response.put("msg", "Invalid query parameters");
+        response.put("status", "400");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
 }
